@@ -1,0 +1,19 @@
+# IDE ve Editor dosyaları
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
+
+# Deployment dosyaları
+windsurf_deployment.yaml
+netlify.toml
+
+# Node modülleri ve log dosyaları
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

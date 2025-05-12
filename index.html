@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Litpack Deprem Sensör Sistemi</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <img src="logo.png" alt="Litpack Logo" class="logo-img">
+            <span>Litpack</span>
+        </div>
+        <nav>
+            <a href="#dashboard" class="active" data-tab="dashboard">Dashboard</a>
+            <a href="#graphs" data-tab="graphs">Grafikler</a>
+            <a href="#history" data-tab="history">Geçmiş Veriler</a>
+            <a href="#settings" data-tab="settings">Ayarlar</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Deprem <span class="highlight">Sensör</span> İzleme Sistemi</h1>
+                <p class="subtitle">Gerçek zamanlı sismik aktivite takibi</p>
+                <div class="current-time">
+                    <i class="fas fa-clock"></i>
+                    <span id="current-time">--:--:--</span>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-info">
+                    <span class="status-label">Sensör Durumu</span>
+                    <div class="sensor-status" id="sensor-status">
+                        <span class="status-dot disconnected"></span>
+                        <span>Bağlı Değil</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section id="dashboard" class="tab-content active">
+                <section class="dashboard-grid">
+                <div class="data-card primary">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Anlık Titreşim Değerleri</h2>
+                        <span class="refresh-time">Son güncelleme: <span id="last-update">Şimdi</span></span>
+                    </div>
+                    <div class="readings">
+                        <div class="reading-box">
+                            <div class="reading-icon x-axis">
+                                <i class="fas fa-arrows-left-right"></i>
+                            </div>
+                            <div class="reading-data">
+                                <span class="axis-label">X Ekseni</span>
+                                <span id="x-value" class="value">0.00</span>
+                                <span class="unit">g</span>
+                            </div>
+                        </div>
+                        <div class="reading-box">
+                            <div class="reading-icon y-axis">
+                                <i class="fas fa-arrows-up-down"></i>
+                            </div>
+                            <div class="reading-data">
+                                <span class="axis-label">Y Ekseni</span>
+                                <span id="y-value" class="value">0.00</span>
+                                <span class="unit">g</span>
+                            </div>
+                        </div>
+                        <div class="reading-box">
+                            <div class="reading-icon z-axis">
+                                <i class="fas fa-arrows-to-dot"></i>
+                            </div>
+                            <div class="reading-data">
+                                <span class="axis-label">Z Ekseni</span>
+                                <span id="z-value" class="value">0.00</span>
+                                <span class="unit">g</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <h2>Hareket Analizi</h2>
+                    <div class="magnitude">
+                        <div class="estimated-intensity">
+                            <h2>Tahmini Şiddet:</h2>
+                            <div class="intensity-value highlight-neon">0.0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="alert-history">
+                <h2>Uyarı Geçmişi</h2>
+                <div class="alerts" id="alert-list">
+                    <!-- Uyarılar buraya JavaScript ile eklenecek -->
+                </div>
+            </section>
+
+            <section id="graphs" class="tab-content">
+                <div class="data-card full-width">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Gerçek Zamanlı Grafik</h2>
+                        <div class="graph-controls">
+                            <select id="graph-type">
+                                <option value="all">Tüm Eksenler</option>
+                                <option value="x">X Ekseni</option>
+                                <option value="y">Y Ekseni</option>
+                                <option value="z">Z Ekseni</option>
+                            </select>
+                            <select id="time-range">
+                                <option value="1m">Son 1 Dakika</option>
+                                <option value="5m">Son 5 Dakika</option>
+                                <option value="15m">Son 15 Dakika</option>
+                                <option value="1h">Son 1 Saat</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="graph-container">
+                        <div id="sensor-graph"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="history" class="tab-content">
+                <div class="data-card full-width">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> Geçmiş Veriler</h2>
+                        <div class="table-controls">
+                            <input type="date" id="history-date" />
+                            <button class="btn-primary"><i class="fas fa-download"></i> Dışa Aktar</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih/Saat</th>
+                                    <th>X Ekseni (g)</th>
+                                    <th>Y Ekseni (g)</th>
+                                    <th>Z Ekseni (g)</th>
+                                    <th>Şiddet</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-data">
+                                <tr class="empty-state">
+                                    <td colspan="6">
+                                        <i class="fas fa-database"></i>
+                                        <p>Henüz veri bulunmuyor</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="settings" class="tab-content">
+                <div class="data-card full-width">
+                    <div class="card-header">
+                        <h2><i class="fas fa-cog"></i> Sistem Ayarları</h2>
+                    </div>
+                    <div class="settings-container">
+                        <div class="settings-group">
+                            <h3>Alarm Eşik Değerleri</h3>
+                            <div class="setting-item">
+                                <label>Düşük Şiddet Alarmı (g)</label>
+                                <input type="number" id="threshold-low" value="0.5" step="0.1" min="0" />
+                            </div>
+                            <div class="setting-item">
+                                <label>Yüksek Şiddet Alarmı (g)</label>
+                                <input type="number" id="threshold-high" value="2.0" step="0.1" min="0" />
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <h3>Veri Toplama</h3>
+                            <div class="setting-item">
+                                <label>Örnekleme Hızı (ms)</label>
+                                <input type="number" id="sampling-rate" value="100" step="50" min="50" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
