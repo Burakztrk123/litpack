@@ -1,9 +1,20 @@
+// MQTT Broker bağlantı bilgileri
+const mqttBroker = "ws://192.168.2.180:9001";
+const mqttOptions = {
+    clientId: "webClient_" + Math.random().toString(16).substr(2, 8),
+    username: "",
+    password: ""
+};
+
+let mqttClient;
+
 // Sayfa yüklendiğinde çalışacak kodlar
 document.addEventListener('DOMContentLoaded', () => {
     initializeTabs();
     initializeGraph();
     updateLastUpdateTime();
     setInterval(updateLastUpdateTime, 1000);
+    connectMQTT();
 });
 
 // Sekme geçişlerini yönetecek fonksiyon
@@ -140,5 +151,51 @@ function saveSettings() {
     console.log('Ayarlar kaydedildi:', settings);
 }
 
-// Arduino'dan gelecek verileri işleyecek fonksiyonlar buraya eklenecek
-// WebSocket veya Serial API kullanılarak Arduino ile iletişim kurulacak
+// MQTT bağlantısını kuran fonksiyon
+function connectMQTT() {
+    console.log("MQTT Broker'a bağlanılıyor...");
+    try {
+        mqttClient = mqtt.connect(mqttBroker, mqttOptions);
+
+        mqttClient.on('connect', () => {
+            console.log("MQTT Broker'a bağlandı!");
+            updateSensorStatus(true);
+            mqttClient.subscribe('kurumsal/veri');
+        });
+
+        mqttClient.on('message', (topic, message) => {
+            if (topic === 'kurumsal/veri') {
+                // Sahte ivme verileri oluştur (gerçek veriler gelene kadar)
+                const x = (Math.random() - 0.5) * 2; // -1 ile 1 arası
+                const y = (Math.random() - 0.5) * 2;
+                const z = (Math.random() - 0.5) * 2;
+                
+                // Verileri güncelle
+                updateSensorData(x, y, z);
+                
+                // Tahmini şiddeti hesapla (basit bir formül)
+                const magnitude = Math.sqrt(x*x + y*y + z*z);
+                updateMagnitude(magnitude);
+                
+                // Eğer belirli bir eşiği geçerse uyarı ekle
+                if (magnitude > 1.5) {
+                    addAlert(`Yüksek hareket tespit edildi! Şiddet: ${magnitude.toFixed(2)}`, 'warning');
+                }
+            }
+        });
+
+        mqttClient.on('error', (error) => {
+            console.error('MQTT Bağlantı hatası:', error);
+            updateSensorStatus(false);
+        });
+
+        mqttClient.on('close', () => {
+            console.log('MQTT Bağlantısı kapandı');
+            updateSensorStatus(false);
+        });
+
+    } catch (error) {
+        console.error('MQTT Bağlantı hatası:', error);
+        updateSensorStatus(false);
+    }
+}
