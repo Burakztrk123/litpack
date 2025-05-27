@@ -26,14 +26,9 @@
         <header>
             <div class="header-content">
                 <h1>Deprem <span class="highlight">Sensör</span> İzleme Sistemi</h1>
-                <p class="subtitle">Gerçek zamanlı sismik aktivite takibi</p>
-                <div class="current-time">
-                    <i class="fas fa-clock"></i>
-                    <span id="current-time">--:--:--</span>
-                </div>
             </div>
-            <div class="status-card">
-                <div class="status-info">
+            <div class="status-info">
+                <div class="sensor-status-card">
                     <span class="status-label">Sensör Durumu</span>
                     <div class="sensor-status" id="sensor-status">
                         <span class="status-dot disconnected"></span>
@@ -49,7 +44,6 @@
                 <div class="data-card primary">
                     <div class="card-header">
                         <h2><i class="fas fa-chart-line"></i> Anlık Titreşim Değerleri</h2>
-                        <span class="refresh-time">Son güncelleme: <span id="last-update">Şimdi</span></span>
                     </div>
                     <div class="readings">
                         <div class="reading-box">
@@ -85,13 +79,13 @@
                     </div>
                 </div>
 
-                <div class="data-card">
-                    <h2>Hareket Analizi</h2>
-                    <div class="magnitude">
-                        <div class="estimated-intensity">
-                            <h2>Tahmini Şiddet:</h2>
-                            <div class="intensity-value highlight-neon">0.0</div>
-                        </div>
+                <div class="data-card analysis-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-exclamation-circle"></i> Şiddet</h2>
+                        <span id="analysis-status" class="status-normal">Normal</span>
+                    </div>
+                    <div class="value-display">
+                        <span id="magnitude-value" class="large-value">0.0</span>
                     </div>
                 </div>
             </section>

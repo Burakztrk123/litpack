@@ -1,0 +1,18 @@
+<![CDATA[<!DOCTYPE html>
+<html>
+<head>
+    <title>Litpack QR Code</title>
+</head>
+<body>
+    <div id="qrcode"></div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script>
+        var typeNumber = 0;
+        var errorCorrectionLevel = 'L';
+        var qr = qrcode(typeNumber, errorCorrectionLevel);
+        qr.addData('http://192.168.2.192:3000');
+        qr.make();
+        document.getElementById('qrcode').innerHTML = qr.createImgTag(10);
+    </script>
+</body>
+</html>]]>

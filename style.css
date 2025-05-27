@@ -152,50 +152,154 @@ header {
     margin-bottom: 0.5rem;
 }
 
+.header-content h1.value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 10px #ff0000;
+    margin-right: 0.25rem;
+}
+
 .highlight {
     color: var(--primary-color);
 }
 
-.highlight-neon {
-    color: #ff0000;
-    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
-    font-size: 3rem;
-    font-weight: bold;
+/* Analiz Kartı Stilleri */
+.analysis-card {
+    background: var(--card-bg);
 }
 
-.current-time {
-    margin-top: 1rem;
+.analysis-card .analysis-card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+}
+
+.analysis-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.analysis-card .card-header h2 {
+    color: #ff3333;
+    font-size: 1.25rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #00ff00;
-    text-shadow: 0 0 10px #00ff00;
+}
+
+.analysis-card .card-header h2 i {
     font-size: 1.5rem;
+    text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+}
+
+.analysis-card .value-display {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.analysis-card .large-value {
+    font-size: 3rem;
     font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 5px #ff0000,
+                0 0 10px #ff0000,
+                0 0 20px #ff0000;
 }
 
-.current-time i {
+.status-normal {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.status-warning {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.status-danger {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+.status-normal {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.status-warning {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.status-danger {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+.analysis-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.detail-item i {
     font-size: 1.25rem;
+    color: var(--primary-color);
 }
 
-.subtitle {
+.detail-label {
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 0.875rem;
 }
 
-.status-card {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    padding: 1.5rem;
-    border-radius: 1rem;
-    color: white;
-    min-width: 300px;
+.detail-value {
+    margin-left: auto;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.status-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.sensor-status-card {
+    background: var(--card-bg);
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    display: block;
+    margin-bottom: 0.5rem;
 }
 
 .sensor-status {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 0.5rem;
 }
 
 .status-dot {

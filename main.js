@@ -1,19 +1,30 @@
 // MQTT Broker bağlantı bilgileri
-const mqttBroker = "ws://192.168.2.180:9001";
+const mqttBroker = "ws://78.189.91.27:9001";  // MQTT broker adresi
+
 const mqttOptions = {
-    clientId: "webClient_" + Math.random().toString(16).substr(2, 8),
+    clientId: `webClient_${Math.random().toString(16).substr(2, 8)}`,
     username: "",
-    password: ""
+    password: "",
+    keepalive: 10,            // Daha sık bağlantı kontrolü
+    reconnectPeriod: 1000,    // Daha hızlı yeniden bağlanma
+    connectTimeout: 5000,     // Daha kısa timeout
+    clean: true,
+    resubscribe: true,
+    qos: 0,
+    rejectUnauthorized: false // SSL sertifika hatasını yoksay
 };
 
 let mqttClient;
+
+// Global değişkenler
+let clockInterval;
 
 // Sayfa yüklendiğinde çalışacak kodlar
 document.addEventListener('DOMContentLoaded', () => {
     initializeTabs();
     initializeGraph();
-    updateLastUpdateTime();
-    setInterval(updateLastUpdateTime, 1000);
+    startClock(); // Saati başlat
+    setInterval(checkSensorConnection, 1000); // Her saniye sensör bağlantısını kontrol et
     connectMQTT();
 });
 
@@ -62,16 +73,38 @@ function updateSensorData(x, y, z) {
     document.getElementById('x-value').textContent = x.toFixed(2);
     document.getElementById('y-value').textContent = y.toFixed(2);
     document.getElementById('z-value').textContent = z.toFixed(2);
-    updateLastUpdateTime();
+
+    // Tahmini şiddet hesaplama ve güncelleme
+    const magnitude = Math.sqrt(x*x + y*y + z*z);
+    updateMagnitude(magnitude);
+
+    // Grafik güncelleme
     updateGraph(x, y, z);
 }
 
-// Saat ve son güncelleme zamanını güncelleyen fonksiyon
-function updateLastUpdateTime() {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString();
-    document.getElementById('last-update').textContent = timeString;
-    document.getElementById('current-time').textContent = timeString;
+// Saat fonksiyonları
+function startClock() {
+    // Varolan interval'i temizle
+    if (clockInterval) {
+        clearInterval(clockInterval);
+    }
+
+    // Saati hemen güncelle
+    updateClock();
+
+    // Her saniye güncellenecek şekilde ayarla
+    clockInterval = setInterval(updateClock, 1000);
+}
+
+function updateClock() {
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+    }
 }
 
 // Sensör durumunu güncelle - backend bağlandığında çağrılacak
@@ -107,9 +140,29 @@ function updateGraph(x, y, z) {
     // Grafik kütüphanesi bağlantısı sonrası implement edilecek
 }
 
-// Tahmini şiddeti güncelleyecek fonksiyon
+// Hareket analizi verilerini güncelleyecek fonksiyon
 function updateMagnitude(value) {
-    document.getElementById('magnitude-value').textContent = value.toFixed(1);
+    const magnitudeElement = document.getElementById('magnitude-value');
+    const analysisStatus = document.getElementById('analysis-status');
+
+    if (magnitudeElement && analysisStatus) {
+        // Şiddet değeri güncelleme
+        magnitudeElement.textContent = value.toFixed(1);
+
+        // Durum güncelleme
+        analysisStatus.className = ''; // Tüm sınıfları temizle
+
+        if (value >= 5.0) {
+            analysisStatus.textContent = 'Şiddetli';
+            analysisStatus.classList.add('status-danger');
+        } else if (value >= 3.0) {
+            analysisStatus.textContent = 'Orta';
+            analysisStatus.classList.add('status-warning');
+        } else {
+            analysisStatus.textContent = 'Normal';
+            analysisStatus.classList.add('status-normal');
+        }
+    }
 }
 
 // Yeni uyarı ekleyecek fonksiyon
@@ -129,13 +182,15 @@ function addAlert(message, type = 'warning') {
 // Sensör durumunu güncelleyecek fonksiyon
 function updateSensorStatus(isConnected) {
     const statusDot = document.querySelector('.status-dot');
-    const statusText = document.getElementById('sensor-status');
+    const statusText = document.querySelector('#sensor-status span:last-child');
     
     if (isConnected) {
-        statusDot.style.backgroundColor = 'var(--success-color)';
+        statusDot.classList.remove('disconnected');
+        statusDot.classList.add('connected');
         statusText.textContent = 'Bağlı';
     } else {
-        statusDot.style.backgroundColor = 'var(--danger-color)';
+        statusDot.classList.remove('connected');
+        statusDot.classList.add('disconnected');
         statusText.textContent = 'Bağlantı Kesildi';
     }
 }
@@ -151,35 +206,85 @@ function saveSettings() {
     console.log('Ayarlar kaydedildi:', settings);
 }
 
+// Sensör bağlantısını kontrol eden fonksiyon
+function checkSensorConnection() {
+    if (!lastMessageTime) return; // Henüz hiç veri gelmemişse kontrol etme
+    
+    const now = Date.now();
+    if (now - lastMessageTime > sensorTimeout) {
+        if (sensorActive) {
+            sensorActive = false;
+            updateSensorStatus(false);
+            console.log('Sensör bağlantısı koptu!');
+        }
+    }
+}
+
 // MQTT bağlantısını kuran fonksiyon
 function connectMQTT() {
     console.log("MQTT Broker'a bağlanılıyor...");
     try {
+        if (mqttClient) {
+            mqttClient.end(true); // Varolan bağlantıyı temizle
+        }
+        
         mqttClient = mqtt.connect(mqttBroker, mqttOptions);
 
         mqttClient.on('connect', () => {
             console.log("MQTT Broker'a bağlandı!");
-            updateSensorStatus(true);
-            mqttClient.subscribe('kurumsal/veri');
+            mqttClient.subscribe('kurumsal/veri', { qos: 0 });
+        });
+
+        mqttClient.on('reconnect', () => {
+            console.log('Yeniden bağlanılıyor...');
+            updateSensorStatus(false);
+        });
+
+        mqttClient.on('error', (error) => {
+            console.error('MQTT Hatası:', error);
+            updateSensorStatus(false);
+        });
+
+        let sensorActive = false;
+        let lastMessageTime = 0;
+        const sensorTimeout = 2000; // 2 saniye veri gelmezse sensör bağlantısı kopmuş sayılır
+
+        // Debug için bağlantı durumunu konsola yazdır
+        console.log('MQTT Bağlantı Durumu:', {
+            broker: mqttBroker,
+            connected: mqttClient.connected,
+            reconnecting: mqttClient.reconnecting
         });
 
         mqttClient.on('message', (topic, message) => {
             if (topic === 'kurumsal/veri') {
-                // Sahte ivme verileri oluştur (gerçek veriler gelene kadar)
-                const x = (Math.random() - 0.5) * 2; // -1 ile 1 arası
-                const y = (Math.random() - 0.5) * 2;
-                const z = (Math.random() - 0.5) * 2;
+                const now = Date.now();
+                lastMessageTime = now;
+                console.log('Yeni veri alındı:', message.toString()); // Debug için
                 
-                // Verileri güncelle
-                updateSensorData(x, y, z);
-                
-                // Tahmini şiddeti hesapla (basit bir formül)
-                const magnitude = Math.sqrt(x*x + y*y + z*z);
-                updateMagnitude(magnitude);
-                
-                // Eğer belirli bir eşiği geçerse uyarı ekle
-                if (magnitude > 1.5) {
-                    addAlert(`Yüksek hareket tespit edildi! Şiddet: ${magnitude.toFixed(2)}`, 'warning');
+                if (!sensorActive) {
+                    sensorActive = true;
+                    updateSensorStatus(true);
+                }
+
+                try {
+                    const data = JSON.parse(message.toString());
+                    if (data.x !== undefined && data.y !== undefined && data.z !== undefined) {
+                        // Değerleri yuvarla
+                        const x = parseFloat(data.x.toFixed(2));
+                        const y = parseFloat(data.y.toFixed(2));
+                        const z = parseFloat(data.z.toFixed(2));
+                        
+                        updateSensorData(x, y, z);
+                        const magnitude = Math.sqrt(x * x + y * y + z * z);
+                        updateMagnitude(magnitude);
+                        
+                        if (magnitude > 1.5) {
+                            addAlert(`Yüksek hareket tespit edildi! Şiddet: ${magnitude.toFixed(2)}`, 'warning');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Veri işleme hatası:', error);
                 }
             }
         });
