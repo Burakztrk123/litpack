@@ -1,5 +1,6 @@
 // MQTT Broker bağlantı bilgileri
-const mqttBroker = "ws://78.189.91.27:9001";  // MQTT broker adresi
+const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+const mqttBroker = `${protocol}78.189.91.27:9001`;  // MQTT broker adresi
 
 const mqttOptions = {
     clientId: `webClient_${Math.random().toString(16).substr(2, 8)}`,
